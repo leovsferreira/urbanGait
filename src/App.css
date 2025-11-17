@@ -145,12 +145,12 @@ body {
 .map-container h3,
 .video-container h3,
 .chart-container h3 {
-  color: #AAB8C1;
+  color: #6d7a84;
   font-size: 1.1rem;
   font-weight: 600;
   margin-bottom: 1rem;
   padding-bottom: 0.5rem;
-  border-bottom: 2px solid #C7D1BC;
+  border-bottom: 2px solid #6d7a84;
 }
 
 .map-container > div:last-child,
@@ -199,7 +199,7 @@ body {
   position: relative;
 }
 
-/* Video Player Styles */
+/* ------------------- CLEAN MODERN VIDEO PLAYER ------------------- */
 
 .video-player {
   width: 100%;
@@ -221,24 +221,26 @@ body {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.5rem;
-  background: #C1B8AA;
+  padding: 0.5rem 0.75rem;
+  background: #ffffff;
   border-radius: 4px;
+  border: 1px solid #e3e7ea;
 }
 
 .control-button {
-  background: #B8AAC1;
-  color: white;
+  background: transparent;
+  color: #6d7a84;
   border: none;
-  padding: 0.5rem 0.75rem;
-  border-radius: 4px;
+  padding: 0.35rem 0.6rem;
+  border-radius: 999px;
   cursor: pointer;
   font-size: 1rem;
-  transition: background-color 0.2s;
+  transition: background-color 0.15s ease, transform 0.05s ease;
 }
 
 .control-button:hover {
-  background: #9e8fb0;
+  background: #f1f4f6;
+  transform: translateY(-1px);
 }
 
 .seek-bar {
@@ -249,31 +251,32 @@ body {
   outline: none;
   -webkit-appearance: none;
   appearance: none;
-  background: #C7D1BC;
+  background: #e3e7ea;
 }
 
 .seek-bar::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
-  background: #B8AAC1;
+  background: #AAB8C1;
   cursor: pointer;
+  border: none;
 }
 
 .seek-bar::-moz-range-thumb {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
-  background: #B8AAC1;
+  background: #AAB8C1;
   cursor: pointer;
   border: none;
 }
 
 .time-display {
-  font-size: 0.875rem;
-  color: #4a4a4a;
+  font-size: 0.8rem;
+  color: #6d7a84;
   font-weight: 500;
   min-width: 80px;
   text-align: right;
@@ -336,7 +339,7 @@ body {
 
 .app.no-data .app-header {
   width: 100%;
-  background-color: #C7D1BC; /* keep green bar in no-data state */
+  background-color: #C7D1BC;
   color: #ffffff;
   border-bottom: none;
   box-shadow: 0 2px 4px rgba(0,0,0,0.04);

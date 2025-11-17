@@ -1,4 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
+import { Play, Pause, StepForward, StepBack } from "lucide-react";
+
 
 const VideoPlayer = ({ videoUrl }) => {
   const videoRef = useRef(null);
@@ -85,15 +87,15 @@ const VideoPlayer = ({ videoUrl }) => {
 
       <div className="video-controls">
         <button onClick={togglePlayPause} className="control-button">
-          {isPlaying ? '⏸️' : '▶️'}
+          {isPlaying ? <Pause size={18} color="#6d7a84" /> : <Play size={18} color="#6d7a84" />}
         </button>
-        
-        <button onClick={() => stepFrame(-1)} className="control-button" title="Previous Frame">
-          ⏮️
+
+        <button onClick={() => stepFrame(-1)} className="control-button">
+          <StepBack size={18} color="#6d7a84" />
         </button>
-        
-        <button onClick={() => stepFrame(1)} className="control-button" title="Next Frame">
-          ⏭️
+
+        <button onClick={() => stepFrame(1)} className="control-button">
+          <StepForward size={18} color="#6d7a84" />
         </button>
 
         <input

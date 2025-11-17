@@ -78,6 +78,7 @@ const MapView = ({ gpsData }) => {
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
       
+      
       <MapUpdater positions={positions} />
       
       {/* Path line */}
