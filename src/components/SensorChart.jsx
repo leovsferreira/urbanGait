@@ -19,7 +19,6 @@ const SensorChart = ({ data, type, progress = 0, onProgressChange }) => {
     );
   }
 
-  // --- Measure container size and keep it in state ---
   useEffect(() => {
     if (!containerRef.current) return;
 
@@ -27,7 +26,6 @@ const SensorChart = ({ data, type, progress = 0, onProgressChange }) => {
       const entry = entries[0];
       const { width, height } = entry.contentRect;
 
-      // Fallbacks so we never have zero
       setDimensions({
         width: width || 800,
         height: height || 260,
@@ -40,7 +38,6 @@ const SensorChart = ({ data, type, progress = 0, onProgressChange }) => {
 
   const { width, height } = dimensions;
 
-  // Basic chart sizing based on measured size
   const margin = { top: 20, right: 20, bottom: 28, left: 52 };
   const innerWidth = Math.max(width - margin.left - margin.right, 10);
   const innerHeight = Math.max(height - margin.top - margin.bottom, 10);
@@ -48,7 +45,6 @@ const SensorChart = ({ data, type, progress = 0, onProgressChange }) => {
   const n = data.length;
   const cursorIndex = n > 1 ? Math.round((progress || 0) * (n - 1)) : 0;
 
-  // ---------- SCALES ----------
 
   const xScale = d3
     .scaleLinear()
@@ -68,7 +64,6 @@ const SensorChart = ({ data, type, progress = 0, onProgressChange }) => {
     .nice()
     .range([innerHeight, 0]);
 
-  // ---------- LINES (straight, no extra smoothing) ----------
 
   const lineForAxis = (accessor) =>
     d3
@@ -81,13 +76,9 @@ const SensorChart = ({ data, type, progress = 0, onProgressChange }) => {
   const gyroLineY = lineForAxis((d) => d.axis_y);
   const gyroLineZ = lineForAxis((d) => d.axis_z);
 
-  // ---------- CURSOR POSITION ----------
-
   const clampedIndex = Math.max(0, Math.min(n - 1, cursorIndex));
   const cursorX = xScale(clampedIndex);
   const cursorY = yScale(data[clampedIndex].axis_x);
-
-  // ---------- AXIS TICKS & GRID ----------
 
   const xTickCount = Math.min(6, n);
   const rawXTicks = d3.ticks(0, n - 1, xTickCount - 1);
@@ -108,7 +99,6 @@ const SensorChart = ({ data, type, progress = 0, onProgressChange }) => {
   const yTickCount = 5;
   const yTicks = d3.ticks(yDomain[0], yDomain[1], yTickCount);
 
-  // ---------- PROGRESS UPDATE HELPERS ----------
 
   const updateProgressFromClientX = (clientX) => {
     if (!onProgressChange || !svgRef.current) return;
@@ -126,7 +116,6 @@ const SensorChart = ({ data, type, progress = 0, onProgressChange }) => {
     onProgressChange(newProgress);
   };
 
-  // ---------- DRAG BEHAVIOR ----------
 
   useEffect(() => {
     const svg = svgRef.current;
@@ -155,7 +144,6 @@ const SensorChart = ({ data, type, progress = 0, onProgressChange }) => {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [innerWidth, n, onProgressChange]);
 
   const handleClick = (e) => {
@@ -172,7 +160,6 @@ const SensorChart = ({ data, type, progress = 0, onProgressChange }) => {
         style={{ width: '100%', height: '100%' }}
       >
         <defs>
-          {/* subtle drop shadow for cursor */}
           <filter id="cursorShadow" x="-30%" y="-30%" width="160%" height="160%">
             <feDropShadow
               dx="0"

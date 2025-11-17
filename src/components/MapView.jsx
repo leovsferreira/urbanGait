@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -26,9 +26,9 @@ const createCustomIcon = (color) => {
   });
 };
 
-const greenIcon = createCustomIcon('#C7D1BC');
-const redIcon = createCustomIcon('#B8AAC1');
-const grayIcon = createCustomIcon('#AAB8C1');
+const startIcon = createCustomIcon('#8cec24ff');
+const intermediateIcon = createCustomIcon('#6d7a84');
+const endIcon = createCustomIcon('#ff4d4d');
 
 function MapUpdater({ positions }) {
   const map = useMap();
@@ -53,53 +53,64 @@ const MapView = ({ gpsData }) => {
   }
 
   const positions = gpsData.map(point => [point.latitude, point.longitude]);
-  
+
   const startPoint = positions[0];
   const endPoint = positions[positions.length - 1];
   const intermediatePoints = positions.slice(1, -1);
 
-  // Calculate center for initial view
-  const center = positions[0];
+  const center = startPoint;
 
   return (
-    <MapContainer
-      center={center}
-      zoom={16}
-      style={{ height: '100%', width: '100%' }}
-      scrollWheelZoom={true}
-    >
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
-      
-      <MapUpdater positions={positions} />
-      
-      {/* Path line */}
-      <Polyline 
-        positions={positions} 
-        color="#C1B8AA" 
-        weight={3}
-        opacity={0.7}
-      />
-      
-      {/* Start marker (green) */}
-      <Marker position={startPoint} icon={greenIcon}>
-      </Marker>
-      
-      {/* Intermediate markers (gray) */}
-      {intermediatePoints.map((position, index) => (
-        <Marker 
-          key={`intermediate-${index}`} 
-          position={position} 
-          icon={grayIcon}
+    <div className="map-wrapper">
+      <MapContainer
+        center={center}
+        zoom={16}
+        style={{ height: '100%', width: '100%' }}
+        scrollWheelZoom={true}
+      >
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-      ))}
-      
-      {/* End marker (red) */}
-      <Marker position={endPoint} icon={redIcon}>
-      </Marker>
-    </MapContainer>
+
+        <MapUpdater positions={positions} />
+
+        <Polyline
+          positions={positions}
+          color="#000000ff"
+          weight={3}
+          opacity={0.7}
+        />
+
+        <Marker position={startPoint} icon={startIcon} />
+
+        {intermediatePoints.map((position, index) => (
+          <Marker
+            key={`intermediate-${index}`}
+            position={position}
+            icon={intermediateIcon}
+          />
+        ))}
+
+        <Marker position={endPoint} icon={endIcon} />
+      </MapContainer>
+
+      {/* Legend overlay */}
+      <div className="map-legend">
+        <div className="legend-item">
+          <span className="legend-marker legend-marker--start" />
+          <span>Start of route</span>
+        </div>
+        <div className="legend-item">
+          <span className="legend-marker legend-marker--intermediate" />
+          <span>Intermediate GPS points</span>
+        </div>
+        <div className="legend-item">
+          <span className="legend-marker legend-marker--end" />
+          <span>End of route</span>
+        </div>
+      </div>
+    </div>
   );
 };
 
