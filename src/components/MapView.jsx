@@ -3,7 +3,6 @@ import { MapContainer, TileLayer, Marker, Polyline, useMap } from 'react-leaflet
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
-// Fix for default marker icons in React-Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
@@ -11,7 +10,6 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
-// Custom markers
 const createCustomIcon = (color) => {
   return L.divIcon({
     className: 'custom-marker',
@@ -32,7 +30,6 @@ const greenIcon = createCustomIcon('#C7D1BC');
 const redIcon = createCustomIcon('#B8AAC1');
 const grayIcon = createCustomIcon('#AAB8C1');
 
-// Component to fit bounds when GPS data changes
 function MapUpdater({ positions }) {
   const map = useMap();
 
@@ -55,10 +52,8 @@ const MapView = ({ gpsData }) => {
     );
   }
 
-  // Extract positions from GPS data
   const positions = gpsData.map(point => [point.latitude, point.longitude]);
   
-  // Start, end, and intermediate points
   const startPoint = positions[0];
   const endPoint = positions[positions.length - 1];
   const intermediatePoints = positions.slice(1, -1);
@@ -77,7 +72,6 @@ const MapView = ({ gpsData }) => {
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      
       
       <MapUpdater positions={positions} />
       

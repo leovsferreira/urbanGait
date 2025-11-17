@@ -47,10 +47,7 @@ const generateThumbnails = async (videoUrl, frameCount = 20) => {
         });
 
       for (let i = 0; i < frameCount; i++) {
-        const t =
-          frameCount === 1
-            ? 0
-            : (duration * i) / (frameCount - 1);
+        const t = frameCount === 1 ? 0 : (duration * i) / (frameCount - 1);
         const thumb = await captureFrameAt(t);
         thumbnails.push(thumb);
       }
@@ -158,7 +155,7 @@ const ClipStrip = ({ videoUrl, currentTime, duration, onSeek }) => {
           </div>
         ))}
 
-        {/* 🔹 Vertical ruler, synced with time, draggable */}
+        {/* Red vertical ruler + triangle (CSS handles color/shape) */}
         <div
           className="clip-strip-ruler"
           style={{ left: `${progress * 100}%` }}
@@ -172,12 +169,14 @@ const ClipStrip = ({ videoUrl, currentTime, duration, onSeek }) => {
   );
 };
 
-const VideoPlayer = ({ videoUrl }) => {
+// ---------- Main VideoPlayer ----------
+const VideoPlayer = ({ videoUrl, globalProgress, onGlobalProgressChange }) => {
   const videoRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
 
+  // When video metadata loads
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
@@ -187,7 +186,12 @@ const VideoPlayer = ({ videoUrl }) => {
     };
 
     const handleTimeUpdate = () => {
-      setCurrentTime(video.currentTime || 0);
+      const t = video.currentTime || 0;
+      setCurrentTime(t);
+      if (onGlobalProgressChange && video.duration) {
+        const p = t / video.duration;
+        onGlobalProgressChange(p);
+      }
     };
 
     const handlePlay = () => setIsPlaying(true);
@@ -204,7 +208,17 @@ const VideoPlayer = ({ videoUrl }) => {
       video.removeEventListener('play', handlePlay);
       video.removeEventListener('pause', handlePause);
     };
-  }, [videoUrl]);
+  }, [onGlobalProgressChange, videoUrl]);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !duration) return;
+    const desiredTime = (globalProgress || 0) * duration;
+    if (Math.abs(desiredTime - video.currentTime) > 0.05) {
+      video.currentTime = desiredTime;
+      setCurrentTime(desiredTime);
+    }
+  }, [globalProgress, duration]);
 
   const togglePlayPause = () => {
     const video = videoRef.current;
@@ -220,8 +234,13 @@ const VideoPlayer = ({ videoUrl }) => {
   const seekTo = (time) => {
     const video = videoRef.current;
     if (!video || isNaN(time)) return;
-    video.currentTime = time;
-    setCurrentTime(time);
+    const t = Math.max(0, Math.min(time, duration || video.duration || 0));
+    video.currentTime = t;
+    setCurrentTime(t);
+    if (onGlobalProgressChange && (duration || video.duration)) {
+      const base = duration || video.duration;
+      onGlobalProgressChange(base ? t / base : 0);
+    }
   };
 
   const handleSeek = (e) => {
@@ -232,12 +251,11 @@ const VideoPlayer = ({ videoUrl }) => {
   const stepFrame = (direction) => {
     const video = videoRef.current;
     if (!video) return;
-
     const frameTime = 1 / 30;
-    const baseDuration = duration || video.duration || 0;
+    const base = duration || video.duration || 0;
     const newTime = Math.min(
       Math.max(video.currentTime + direction * frameTime, 0),
-      baseDuration
+      base
     );
     seekTo(newTime);
   };
@@ -268,7 +286,6 @@ const VideoPlayer = ({ videoUrl }) => {
         Your browser does not support the video tag.
       </video>
 
-      {/* 🔹 Clip strip with draggable ruler */}
       <ClipStrip
         videoUrl={videoUrl}
         currentTime={currentTime}
@@ -319,3 +336,6 @@ const VideoPlayer = ({ videoUrl }) => {
 };
 
 export default VideoPlayer;
+
+
+        

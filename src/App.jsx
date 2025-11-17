@@ -12,12 +12,15 @@ function App() {
   const [videoUrl, setVideoUrl] = useState(null);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
 
+  const [progress, setProgress] = useState(0);
+
   const handleDataLoaded = (data) => {
     setGpsData(data.gps);
     setSensorOneData(data.sensorOne);
     setSensorThreeData(data.sensorThree);
     setVideoUrl(data.video);
     setIsDataLoaded(true);
+    setProgress(0);
   };
 
   return (
@@ -44,7 +47,11 @@ function App() {
             <div className="top-section">
               <div className="video-container">
                 <h3>Video Stream</h3>
-                <VideoPlayer videoUrl={videoUrl} />
+                <VideoPlayer
+                  videoUrl={videoUrl}
+                  globalProgress={progress}
+                  onGlobalProgressChange={setProgress}
+                />
               </div>
               <div className="map-container">
                 <h3>GPS Trajectory</h3>
@@ -55,18 +62,20 @@ function App() {
             <div className="charts-section">
               <div className="chart-container">
                 <h3>Sensor One - Pressure</h3>
-                <SensorChart 
-                  data={sensorOneData} 
+                <SensorChart
+                  data={sensorOneData}
                   type="pressure"
-                  color="rgba(75, 192, 192, 1)"
+                  progress={progress}
+                  onProgressChange={setProgress}
                 />
               </div>
               <div className="chart-container">
                 <h3>Sensor Three - Gyroscope (X, Y, Z)</h3>
-                <SensorChart 
-                  data={sensorThreeData} 
+                <SensorChart
+                  data={sensorThreeData}
                   type="gyroscope"
-                  color="rgba(255, 99, 132, 1)"
+                  progress={progress}
+                  onProgressChange={setProgress}
                 />
               </div>
             </div>
