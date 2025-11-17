@@ -4,7 +4,9 @@
   box-sizing: border-box;
 }
 
-html, body, #root {
+html,
+body,
+#root {
   margin: 0;
   padding: 0;
   width: 100%;
@@ -20,11 +22,11 @@ body {
   background-color: #ffffff;
 }
 
-/* App layout */
+/* ------------------ APP LAYOUT ------------------ */
 
 .app {
-  min-height: 100vh;
   width: 100%;
+  height: 100vh;          /* 🔹 take full viewport height */
   display: flex;
   flex-direction: column;
 }
@@ -41,6 +43,7 @@ body {
   align-items: center;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   min-height: 72px;
+  flex: 0 0 auto;         /* fixed header row */
 }
 
 .app-header h1 {
@@ -69,24 +72,27 @@ body {
   background-color: #88939A;
 }
 
-/* Main content */
+/* ------------------ MAIN CONTENT ------------------ */
 
 .main-content {
-  flex: 1;
-  padding: 2rem;
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
+  flex: 1 1 auto;
+  padding: 1rem 2rem 1.5rem;
+  display: grid;
+  grid-template-columns: 5fr 3fr;  /* left: video | right: map+charts */
+  grid-template-rows: 1fr 1fr;     /* top row, bottom row */
+  gap: 1rem;
+  overflow: hidden;                /* nothing scrolls outside */
 }
 
-/* Empty (no-data) state */
+/* ------------- EMPTY (NO DATA) STATE ------------- */
 
 .empty-state {
+  grid-column: 1 / 3;          /* span both columns */
+  grid-row: 1 / 3;             /* span both rows */
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 400px;
   background: white;
   border-radius: 8px;
   padding: 3rem;
@@ -99,7 +105,7 @@ body {
 }
 
 .empty-state p {
-  color: #6d7a84; /* gray for description */
+  color: #6d7a84;
   margin-bottom: 1rem;
 }
 
@@ -122,16 +128,15 @@ body {
   color: #6d7a84;
 }
 
-/* Top layout when data is loaded */
+/* When we’re showing data, .top-section and .charts-section are children
+   of .main-content. We want their inner boxes (video/map) to be grid items. */
 
 .top-section {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 2rem;
-  height: 780px;
+  display: contents;    /* 🔹 makes video/map act as direct grid children */
 }
 
-.map-container,
+/* ------------------ VIDEO (LEFT, FULL HEIGHT) ------------------ */
+
 .video-container {
   background: white;
   border-radius: 8px;
@@ -140,11 +145,13 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  min-height: 0;
+
+  grid-column: 1 / 2;  /* left column */
+  grid-row: 1 / 3;     /* span both rows = full height */
 }
 
-.map-container h3,
-.video-container h3,
-.chart-container h3 {
+.video-container h3 {
   color: #6d7a84;
   font-size: 1.1rem;
   font-weight: 600;
@@ -153,8 +160,38 @@ body {
   border-bottom: 2px solid #6d7a84;
 }
 
-.map-container > div:last-child,
 .video-container > div:last-child {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+}
+
+/* ------------------ MAP (RIGHT TOP) ------------------ */
+
+.map-container {
+  background: white;
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+
+  grid-column: 2 / 3;  /* right column */
+  grid-row: 1 / 2;     /* top row */
+}
+
+.map-container h3 {
+  color: #6d7a84;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #6d7a84;
+}
+
+.map-container > div:last-child {
   flex: 1;
   position: relative;
   min-height: 0;
@@ -173,13 +210,15 @@ body {
   font-style: italic;
 }
 
-/* Charts section */
+/* ------------------ CHARTS (RIGHT BOTTOM) ------------------ */
 
 .charts-section {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2rem;
-  min-height: 400px;
+  grid-column: 2 / 3;      /* right column */
+  grid-row: 2 / 3;         /* bottom row */
+  display: flex;
+  flex-direction: column;  /* stacked charts */
+  gap: 1rem;
+  min-height: 0;
 }
 
 .chart-container {
@@ -187,10 +226,20 @@ body {
   border-radius: 8px;
   padding: 1rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  height: 400px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  min-height: 0;
+  flex: 1;                 /* each chart gets half of the vertical space */
+}
+
+.chart-container h3 {
+  color: #6d7a84;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #6d7a84;
 }
 
 .chart-container > div:last-child {
@@ -199,7 +248,7 @@ body {
   position: relative;
 }
 
-/* ------------------- CLEAN MODERN VIDEO PLAYER ------------------- */
+/* ------------------- VIDEO PLAYER STYLES ------------------- */
 
 .video-player {
   width: 100%;
@@ -207,6 +256,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  min-height: 0;
 }
 
 .video-element {
@@ -282,7 +332,7 @@ body {
   text-align: right;
 }
 
-/* Leaflet Map Styles */
+/* ------------------- LEAFLET MAP ------------------- */
 
 .leaflet-container {
   height: 100%;
@@ -290,28 +340,36 @@ body {
   border-radius: 4px;
 }
 
-/* Custom marker styles */
-
 .custom-marker {
   background: none;
   border: none;
 }
 
-/* Responsive Design */
+/* ------------------- RESPONSIVE ------------------- */
 
 @media (max-width: 1200px) {
-  .top-section,
-  .charts-section {
-    grid-template-columns: 1fr;
-  }
-
-  .top-section {
+  /* On medium screens, fall back to vertical stacking with scroll */
+  .app {
     height: auto;
+    min-height: 100vh;
   }
 
+  .main-content {
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    overflow: auto;
+  }
+
+  .video-container,
   .map-container,
-  .video-container {
-    height: 400px;
+  .charts-section {
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  .charts-section {
+    flex-direction: column;
   }
 }
 
@@ -322,42 +380,7 @@ body {
     text-align: center;
   }
 
-  .main-content {
-    padding: 1rem;
-  }
-
   .video-controls {
     flex-wrap: wrap;
   }
-}
-
-/* ---------- No-data (initial) state overrides ---------- */
-
-.app.no-data .main-content {
-  padding: 0;
-}
-
-.app.no-data .app-header {
-  width: 100%;
-  background-color: #C7D1BC;
-  color: #ffffff;
-  border-bottom: none;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.04);
-}
-
-.app.no-data .empty-state {
-  min-height: calc(100vh - 72px);
-  border-radius: 0;
-  box-shadow: none;
-  padding: 2rem;
-  background: #ffffff;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
-.app.no-data .top-section,
-.app.no-data .charts-section {
-  display: none;
 }
