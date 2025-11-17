@@ -22,20 +22,17 @@ body {
   background-color: #ffffff;
 }
 
-/* ------------------ APP LAYOUT ------------------ */
 
 .app {
   width: 100%;
-  height: 100vh;          /* 🔹 take full viewport height */
+  height: 100vh;
   display: flex;
   flex-direction: column;
 }
 
-/* Header / top bar */
-
 .app-header {
   width: 100%;
-  background-color: #C7D1BC; /* green from palette */
+  background-color: #C7D1BC;
   color: #ffffff;
   padding: 1rem 2rem;
   display: flex;
@@ -43,7 +40,7 @@ body {
   align-items: center;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   min-height: 72px;
-  flex: 0 0 auto;         /* fixed header row */
+  flex: 0 0 auto; 
 }
 
 .app-header h1 {
@@ -57,7 +54,7 @@ body {
 }
 
 .upload-button {
-  background-color: #AAB8C1; /* blue from palette */
+  background-color: #AAB8C1;
   color: white;
   border: none;
   padding: 0.75rem 1.5rem;
@@ -72,23 +69,20 @@ body {
   background-color: #88939A;
 }
 
-/* ------------------ MAIN CONTENT ------------------ */
-
 .main-content {
   flex: 1 1 auto;
   padding: 1rem 2rem 1.5rem;
   display: grid;
-  grid-template-columns: 5fr 3fr;  /* left: video | right: map+charts */
-  grid-template-rows: 1fr 1fr;     /* top row, bottom row */
+  grid-template-columns: 3fr 2fr; 
+  grid-template-rows: 1fr 1fr;
   gap: 1rem;
-  overflow: hidden;                /* nothing scrolls outside */
+  overflow: hidden; 
 }
 
-/* ------------- EMPTY (NO DATA) STATE ------------- */
 
 .empty-state {
-  grid-column: 1 / 3;          /* span both columns */
-  grid-row: 1 / 3;             /* span both rows */
+  grid-column: 1 / 3; 
+  grid-row: 1 / 3;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -100,7 +94,7 @@ body {
 }
 
 .empty-state h2 {
-  color: #6d7a84; /* gray for title */
+  color: #6d7a84;
   margin-bottom: 1rem;
 }
 
@@ -128,14 +122,9 @@ body {
   color: #6d7a84;
 }
 
-/* When we’re showing data, .top-section and .charts-section are children
-   of .main-content. We want their inner boxes (video/map) to be grid items. */
-
 .top-section {
-  display: contents;    /* 🔹 makes video/map act as direct grid children */
+  display: contents; 
 }
-
-/* ------------------ VIDEO (LEFT, FULL HEIGHT) ------------------ */
 
 .video-container {
   background: white;
@@ -147,8 +136,8 @@ body {
   overflow: hidden;
   min-height: 0;
 
-  grid-column: 1 / 2;  /* left column */
-  grid-row: 1 / 3;     /* span both rows = full height */
+  grid-column: 1 / 2;
+  grid-row: 1 / 3;
 }
 
 .video-container h3 {
@@ -166,7 +155,6 @@ body {
   position: relative;
 }
 
-/* ------------------ MAP (RIGHT TOP) ------------------ */
 
 .map-container {
   background: white;
@@ -178,8 +166,7 @@ body {
   overflow: hidden;
   min-height: 0;
 
-  grid-column: 2 / 3;  /* right column */
-  grid-row: 1 / 2;     /* top row */
+  grid-row: 1 / 2;
 }
 
 .map-container h3 {
@@ -197,7 +184,6 @@ body {
   min-height: 0;
 }
 
-/* Placeholders */
 
 .map-placeholder,
 .video-placeholder,
@@ -210,13 +196,11 @@ body {
   font-style: italic;
 }
 
-/* ------------------ CHARTS (RIGHT BOTTOM) ------------------ */
-
 .charts-section {
-  grid-column: 2 / 3;      /* right column */
-  grid-row: 2 / 3;         /* bottom row */
+  grid-column: 2 / 3;
+  grid-row: 2 / 3;
   display: flex;
-  flex-direction: column;  /* stacked charts */
+  flex-direction: column;
   gap: 1rem;
   min-height: 0;
 }
@@ -230,7 +214,7 @@ body {
   flex-direction: column;
   overflow: hidden;
   min-height: 0;
-  flex: 1;                 /* each chart gets half of the vertical space */
+  flex: 1;
 }
 
 .chart-container h3 {
@@ -248,8 +232,6 @@ body {
   position: relative;
 }
 
-/* ------------------- VIDEO PLAYER STYLES ------------------- */
-
 .video-player {
   width: 100%;
   height: 100%;
@@ -266,6 +248,113 @@ body {
   border-radius: 4px;
   object-fit: contain;
 }
+
+.clip-strip {
+  width: 100%;
+  padding: 0.2rem 0 1rem; 
+  position: relative;
+}
+
+.clip-strip-thumbnails {
+  position: relative;
+  display: flex;
+  height: 64px;
+  border-radius: 6px;
+  overflow: visible;
+  background: #000;
+}
+
+.clip-thumb {
+  flex: 1;
+  border: none;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+  position: relative;
+}
+
+.clip-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.8);
+  transition: transform 0.1s, filter 0.1s;
+}
+
+.clip-thumb:hover img {
+  transform: scale(1.05);
+  filter: brightness(1);
+}
+
+
+.clip-strip-ruler {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  transform: translateX(-50%);
+  cursor: ew-resize;
+  z-index: 5;
+}
+
+/* Red vertical line */
+.clip-strip-ruler-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  transform: translateX(-50%);
+  background: #ff4d4d; 
+  box-shadow: 0 0 6px rgba(255, 50, 50, 0.8);
+}
+
+.clip-strip-ruler-handle {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%) rotate(180deg);
+  width: 0;
+  height: 0;
+  border-left: 9px solid transparent;
+  border-right: 9px solid transparent;
+  border-top: 14px solid #ff4d4d;
+
+  filter: drop-shadow(0 2px 2px rgba(0,0,0,0.25));
+}
+
+.clip-strip--loading {
+  padding: 0.4rem 0;
+}
+
+.clip-strip-loading-bar {
+  width: 100%;
+  height: 10px;
+  border-radius: 999px;
+  background: #e3e7ea;
+  overflow: hidden;
+  position: relative;
+}
+
+.clip-strip-loading-bar::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(170,184,193,0) 0%,
+    rgba(170,184,193,0.6) 50%,
+    rgba(170,184,193,0) 100%
+  );
+  animation: clipstripshimmer 1s linear infinite;
+}
+
+@keyframes clipstripshimmer {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(100%); }
+}
+
 
 .video-controls {
   display: flex;
@@ -332,7 +421,6 @@ body {
   text-align: right;
 }
 
-/* ------------------- LEAFLET MAP ------------------- */
 
 .leaflet-container {
   height: 100%;
@@ -345,10 +433,7 @@ body {
   border: none;
 }
 
-/* ------------------- RESPONSIVE ------------------- */
-
 @media (max-width: 1200px) {
-  /* On medium screens, fall back to vertical stacking with scroll */
   .app {
     height: auto;
     min-height: 100vh;
