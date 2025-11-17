@@ -19,7 +19,6 @@ const FileUploader = ({ onDataLoaded }) => {
       video: null
     };
 
-    // Process each file
     for (const file of files) {
       const fileName = file.name.toLowerCase();
 
@@ -34,7 +33,6 @@ const FileUploader = ({ onDataLoaded }) => {
       }
     }
 
-    // Validate that we have the required files
     if (data.gps.length === 0 || data.sensorOne.length === 0 || 
         data.sensorThree.length === 0 || !data.video) {
       alert('Missing required files. Please ensure the folder contains:\n- gps.csv\n- sensors_one.csv\n- sensors_three.csv\n- video.mp4');
@@ -76,7 +74,7 @@ const FileUploader = ({ onDataLoaded }) => {
         className="upload-button"
         onClick={() => folderInputRef.current.click()}
       >
-        📁 Upload Data Folder
+        Upload Data Folder
       </button>
     </div>
   );
