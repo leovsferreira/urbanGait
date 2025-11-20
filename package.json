@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "homepage": "https://leovsferreira.github.io/urbanGait/",
+  "homepage": "https://leovsferreira.github.io/urbangait/",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
