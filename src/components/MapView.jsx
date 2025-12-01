@@ -95,7 +95,6 @@ const MapView = ({ gpsData }) => {
         <Marker position={endPoint} icon={endIcon} />
       </MapContainer>
 
-      {/* Legend overlay */}
       <div className="map-legend">
         <div className="legend-item">
           <span className="legend-marker legend-marker--start" />

@@ -25,13 +25,9 @@ const generateThumbnails = async (videoUrl, frameCount = 20) => {
       }
 
       const canvas = document.createElement('canvas');
-      const ratio = video.videoWidth && video.videoHeight
-        ? video.videoWidth / video.videoHeight
-        : 16 / 9;
-
-      const targetWidth = 80;
-      canvas.width = targetWidth;
-      canvas.height = targetWidth / ratio;
+      const ratio = video.videoWidth / video.videoHeight || 16 / 9;
+      canvas.width = 80;
+      canvas.height = 80 / ratio;
       const ctx = canvas.getContext('2d');
 
       const captureFrameAt = (time) =>
@@ -48,8 +44,7 @@ const generateThumbnails = async (videoUrl, frameCount = 20) => {
 
       for (let i = 0; i < frameCount; i++) {
         const t = frameCount === 1 ? 0 : (duration * i) / (frameCount - 1);
-        const thumb = await captureFrameAt(t);
-        thumbnails.push(thumb);
+        thumbnails.push(await captureFrameAt(t));
       }
 
       cleanup();
@@ -60,107 +55,108 @@ const generateThumbnails = async (videoUrl, frameCount = 20) => {
   });
 };
 
-const ClipStrip = ({ videoUrl, currentTime, duration, onSeek }) => {
+const ClipStrip = ({ videoUrl, currentTime, duration, onSeek, selection, onSelectionChange, annotations }) => {
   const [thumbnails, setThumbnails] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
   const stripRef = useRef(null);
-  const [isDragging, setIsDragging] = useState(false);
+  const isDragging = useRef(false);
+  const isSelecting = useRef(false);
+  const selectionStart = useRef(0);
 
   useEffect(() => {
     if (!videoUrl) return;
-    let cancelled = false;
-
-    const run = async () => {
-      setIsLoading(true);
-      const thumbs = await generateThumbnails(videoUrl, 20);
-      if (!cancelled) {
-        setThumbnails(thumbs);
-        setIsLoading(false);
-      }
-    };
-
-    run();
-
-    return () => {
-      cancelled = true;
-    };
+    generateThumbnails(videoUrl, 20).then(setThumbnails);
   }, [videoUrl]);
 
-  const updateFromClientX = (clientX) => {
+  const handleMouseDown = (e) => {
     if (!stripRef.current || !duration) return;
     const rect = stripRef.current.getBoundingClientRect();
-    let ratio = (clientX - rect.left) / rect.width;
-    ratio = Math.min(Math.max(ratio, 0), 1);
-    const newTime = ratio * duration;
-    onSeek(newTime);
-  };
+    const x = e.clientX - rect.left;
+    const ratio = Math.max(0, Math.min(x / rect.width, 1));
+    const time = ratio * duration;
 
-  const handleClick = (e) => {
-    updateFromClientX(e.clientX);
-  };
-
-  const handleMouseDown = (e) => {
-    setIsDragging(true);
-    updateFromClientX(e.clientX);
+    if (e.shiftKey) {
+        isSelecting.current = true;
+        selectionStart.current = time;
+        if (onSelectionChange) onSelectionChange(time, time, false);
+    } else {
+        isDragging.current = true;
+        onSeek(time);
+    }
   };
 
   useEffect(() => {
-    if (!isDragging) return;
-
     const handleMouseMove = (e) => {
-      updateFromClientX(e.clientX);
+        if (!stripRef.current || !duration) return;
+        const rect = stripRef.current.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const ratio = Math.max(0, Math.min(x / rect.width, 1));
+        
+        if (isSelecting.current) {
+            const t = ratio * duration;
+            const start = Math.min(selectionStart.current, t);
+            const end = Math.max(selectionStart.current, t);
+            if (onSelectionChange) onSelectionChange(start, end, false);
+        } 
+        else if (isDragging.current) {
+            onSeek(ratio * duration);
+        }
     };
 
     const handleMouseUp = () => {
-      setIsDragging(false);
+        if (isSelecting.current) {
+            isSelecting.current = false;
+            if (selection && onSelectionChange) {
+                onSelectionChange(selection.start, selection.end, true);
+            }
+        }
+        isDragging.current = false;
     };
 
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('mouseup', handleMouseUp);
-
     return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
+        window.removeEventListener('mousemove', handleMouseMove);
+        window.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [isDragging, duration]);
+  }, [duration, selection, onSelectionChange, onSeek]);
 
   if (!videoUrl) return null;
 
-  if (isLoading || thumbnails.length === 0) {
-    return (
-      <div className="clip-strip clip-strip--loading">
-        <div className="clip-strip-loading-bar" />
-      </div>
-    );
-  }
-
-  const progress =
-    !duration || duration <= 0
-      ? 0
-      : Math.min(Math.max(currentTime / duration, 0), 1);
+  const progress = !duration || duration <= 0 ? 0 : Math.min(Math.max(currentTime / duration, 0), 1);
 
   return (
     <div className="clip-strip">
-      <div
-        className="clip-strip-thumbnails"
-        ref={stripRef}
-        onClick={handleClick}
-      >
+      <div className="clip-strip-thumbnails" ref={stripRef} onMouseDown={handleMouseDown}>
         {thumbnails.map((thumb, index) => (
           <div key={index} className="clip-thumb">
-            <img
-              src={thumb.url}
-              alt={`Frame at ${thumb.time.toFixed(1)}s`}
-            />
+            <img src={thumb.url} alt="" />
           </div>
         ))}
 
-        {/* Red vertical ruler + triangle (CSS handles color/shape) */}
-        <div
-          className="clip-strip-ruler"
-          style={{ left: `${progress * 100}%` }}
-          onMouseDown={handleMouseDown}
-        >
+        {annotations && annotations.map(ann => (
+            <div key={ann.id} style={{
+                position: 'absolute',
+                top: 0, bottom: 0,
+                left: `${(ann.start / duration) * 100}%`,
+                width: `${((ann.end - ann.start) / duration) * 100}%`,
+                background: 'rgba(255, 193, 7, 0.4)',
+                pointerEvents: 'none'
+            }} />
+        ))}
+
+        {selection && selection.isActive && (
+            <div style={{
+                position: 'absolute',
+                top: 0, bottom: 0,
+                left: `${(selection.start / duration) * 100}%`,
+                width: `${((selection.end - selection.start) / duration) * 100}%`,
+                background: 'rgba(33, 150, 243, 0.5)',
+                border: '1px solid #2196f3',
+                pointerEvents: 'none'
+            }} />
+        )}
+
+        <div className="clip-strip-ruler" style={{ left: `${progress * 100}%` }}>
           <div className="clip-strip-ruler-line" />
           <div className="clip-strip-ruler-handle" />
         </div>
@@ -169,14 +165,19 @@ const ClipStrip = ({ videoUrl, currentTime, duration, onSeek }) => {
   );
 };
 
-// ---------- Main VideoPlayer ----------
-const VideoPlayer = ({ videoUrl, globalProgress, onGlobalProgressChange }) => {
+const VideoPlayer = ({ 
+  videoUrl, 
+  globalProgress, 
+  onGlobalProgressChange, 
+  selection, 
+  onSelectionChange, 
+  annotations 
+}) => {
   const videoRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
 
-  // When video metadata loads
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
@@ -188,9 +189,8 @@ const VideoPlayer = ({ videoUrl, globalProgress, onGlobalProgressChange }) => {
     const handleTimeUpdate = () => {
       const t = video.currentTime || 0;
       setCurrentTime(t);
-      if (onGlobalProgressChange && video.duration) {
-        const p = t / video.duration;
-        onGlobalProgressChange(p);
+      if (!video.paused && onGlobalProgressChange && video.duration) {
+        onGlobalProgressChange(t / video.duration);
       }
     };
 
@@ -208,63 +208,54 @@ const VideoPlayer = ({ videoUrl, globalProgress, onGlobalProgressChange }) => {
       video.removeEventListener('play', handlePlay);
       video.removeEventListener('pause', handlePause);
     };
-  }, [onGlobalProgressChange, videoUrl]);
+  }, [onGlobalProgressChange]);
 
   useEffect(() => {
     const video = videoRef.current;
     if (!video || !duration) return;
-    const desiredTime = (globalProgress || 0) * duration;
-    if (Math.abs(desiredTime - video.currentTime) > 0.05) {
-      video.currentTime = desiredTime;
-      setCurrentTime(desiredTime);
+    
+    const targetTime = (globalProgress || 0) * duration;
+    
+    if (Math.abs(targetTime - video.currentTime) > 0.1) {
+      video.currentTime = targetTime;
+      setCurrentTime(targetTime);
     }
   }, [globalProgress, duration]);
 
   const togglePlayPause = () => {
     const video = videoRef.current;
     if (!video) return;
-
-    if (isPlaying) {
-      video.pause();
-    } else {
-      video.play();
-    }
+    if (isPlaying) video.pause();
+    else video.play();
   };
 
   const seekTo = (time) => {
     const video = videoRef.current;
-    if (!video || isNaN(time)) return;
-    const t = Math.max(0, Math.min(time, duration || video.duration || 0));
+    if (!video) return;
+    const t = Math.max(0, Math.min(time, duration));
     video.currentTime = t;
     setCurrentTime(t);
-    if (onGlobalProgressChange && (duration || video.duration)) {
-      const base = duration || video.duration;
-      onGlobalProgressChange(base ? t / base : 0);
-    }
+    if (onGlobalProgressChange) onGlobalProgressChange(t / duration);
   };
 
   const handleSeek = (e) => {
-    const seekTime = parseFloat(e.target.value);
-    seekTo(seekTime);
+    const t = parseFloat(e.target.value);
+    seekTo(t);
   };
 
   const stepFrame = (direction) => {
     const video = videoRef.current;
     if (!video) return;
     const frameTime = 1 / 30;
-    const base = duration || video.duration || 0;
-    const newTime = Math.min(
-      Math.max(video.currentTime + direction * frameTime, 0),
-      base
-    );
-    seekTo(newTime);
+    seekTo(video.currentTime + direction * frameTime);
   };
 
   const formatTime = (time) => {
     if (!time || isNaN(time)) return '0:00';
     const minutes = Math.floor(time / 60);
     const seconds = Math.floor(time % 60);
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    const ms = Math.floor((time % 1) * 10);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}.${ms}`;
   };
 
   if (!videoUrl) {
@@ -282,6 +273,8 @@ const VideoPlayer = ({ videoUrl, globalProgress, onGlobalProgressChange }) => {
         src={videoUrl}
         className="video-element"
         preload="metadata"
+        playsInline
+        onClick={togglePlayPause}
       >
         Your browser does not support the video tag.
       </video>
@@ -291,30 +284,22 @@ const VideoPlayer = ({ videoUrl, globalProgress, onGlobalProgressChange }) => {
         currentTime={currentTime}
         duration={duration}
         onSeek={seekTo}
+        selection={selection}
+        onSelectionChange={onSelectionChange}
+        annotations={annotations}
       />
 
       <div className="video-controls">
         <button onClick={togglePlayPause} className="control-button">
-          {isPlaying
-            ? <Pause size={18} color="#6d7a84" />
-            : <Play size={18} color="#6d7a84" />
-          }
+          {isPlaying ? <Pause size={18} /> : <Play size={18} />}
         </button>
 
-        <button
-          onClick={() => stepFrame(-1)}
-          className="control-button"
-          title="Previous frame"
-        >
-          <StepBack size={18} color="#6d7a84" />
+        <button onClick={() => stepFrame(-1)} className="control-button" title="Prev Frame">
+          <StepBack size={18} />
         </button>
 
-        <button
-          onClick={() => stepFrame(1)}
-          className="control-button"
-          title="Next frame"
-        >
-          <StepForward size={18} color="#6d7a84" />
+        <button onClick={() => stepFrame(1)} className="control-button" title="Next Frame">
+          <StepForward size={18} />
         </button>
 
         <input
@@ -336,6 +321,3 @@ const VideoPlayer = ({ videoUrl, globalProgress, onGlobalProgressChange }) => {
 };
 
 export default VideoPlayer;
-
-
-        
