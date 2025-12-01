@@ -12,10 +12,10 @@ const FileUploader = ({ onDataLoaded }) => {
       return;
     }
 
-    // We prioritize sensors.three.csv, but keep structure generic
     const rawData = {
       gps: [],
       sensorThree: [],
+      sensorOne: [],
       video: null
     };
 
@@ -24,30 +24,31 @@ const FileUploader = ({ onDataLoaded }) => {
 
       if (fileName === 'gps.csv') {
         rawData.gps = await parseCSV(file);
-      } else if (fileName === 'sensors.three.csv' || fileName === 'sensors_three.csv' || fileName === 'three.sensors.csv') {
+      } else if (['sensors.three.csv', 'three.sensors.csv'].includes(fileName)) {
         rawData.sensorThree = await parseCSV(file);
+      } else if (['sensors.one.csv', 'one.sensors.csv'].includes(fileName)) {
+        rawData.sensorOne = await parseCSV(file);
       } else if (fileName === 'video.mp4') {
         rawData.video = URL.createObjectURL(file);
       }
     }
 
     if (rawData.sensorThree.length === 0 || !rawData.video) {
-      alert('Missing required files.\nRequired: sensors.three.csv (or three.sensors.csv) and video.mp4');
+      alert('Missing required files.\nRequired: sensors.three.csv and video.mp4');
       if (rawData.video) URL.revokeObjectURL(rawData.video);
       return;
     }
 
-    // Process Sensor Data: Split Gyro/Accel and Normalize Time
-    const processedSensors = processSensorData(rawData.sensorThree);
+    // Process and Sync all sensors
+    const processed = processAllSensors(rawData.sensorThree, rawData.sensorOne);
 
-    const finalData = {
+    onDataLoaded({
       gps: rawData.gps,
-      accelerometer: processedSensors.accelerometer,
-      gyroscope: processedSensors.gyroscope,
+      accelerometer: processed.accelerometer,
+      gyroscope: processed.gyroscope,
+      barometer: processed.barometer,
       video: rawData.video
-    };
-
-    onDataLoaded(finalData);
+    });
     
     if (folderInputRef.current) {
       folderInputRef.current.value = '';
@@ -71,37 +72,65 @@ const FileUploader = ({ onDataLoaded }) => {
     });
   };
 
-  // New Logic: Split sensors and calculate Relative Time (Seconds)
-  const processSensorData = (data) => {
+  // Sync Logic: Use UTC Time to align different devices
+  const processAllSensors = (sensorThree, sensorOne) => {
     const accelerometer = [];
     const gyroscope = [];
+    const barometer = [];
 
-    // 1. Sort by timestamp just in case
-    data.sort((a, b) => a.timestamp_nano - b.timestamp_nano);
+    // Filter for the specific sensors we want
+    // Using 'linear acceleration sensor' for gait analysis as requested earlier
+    const rawAccel = sensorThree.filter(r => r.name === 'linear acceleration sensor');
+    const rawGyro = sensorThree.filter(r => r.name === 'lsm6dso gyroscope sensor');
+    
+    // Flexible matching for barometer from sensors.one.csv
+    const rawBaro = sensorOne ? sensorOne.filter(r => r.name && r.name.includes('barometer')) : [];
 
-    if (data.length === 0) return { accelerometer, gyroscope };
+    // Helper to get Unix Epoch (ms) from ISO string
+    const getEpoch = (row) => {
+        if (!row.datetime_utc) return NaN;
+        return new Date(row.datetime_utc).getTime();
+    };
 
-    // 2. Determine start time (first timestamp in the entire file)
-    const startTime = data[0].timestamp_nano;
-
-    // 3. Iterate, Split, and Normalize
-    data.forEach(row => {
-      // Calculate seconds from start: (Current - Start) / 1,000,000,000
-      const relativeTime = (row.timestamp_nano - startTime) / 1e9;
-      
-      const point = {
-        ...row,
-        relativeTime // Normalized time in seconds
-      };
-
-      if (row.name === 'lsm6dso acceleration sensor') {
-        accelerometer.push(point);
-      } else if (row.name === 'lsm6dso gyroscope sensor') {
-        gyroscope.push(point);
+    // Find Global Minimum Start Time across all datasets
+    let minTime = Infinity;
+    
+    [rawAccel, rawGyro, rawBaro].forEach(dataset => {
+      if (dataset.length > 0) {
+        // Sort by time first
+        dataset.sort((a, b) => getEpoch(a) - getEpoch(b));
+        const start = getEpoch(dataset[0]);
+        if (!isNaN(start) && start < minTime) {
+            minTime = start;
+        }
       }
     });
 
-    return { accelerometer, gyroscope };
+    if (minTime === Infinity) {
+        console.warn("Could not determine a start time.");
+        minTime = 0;
+    }
+
+    // Normalize all data to Relative Time (seconds)
+    const normalize = (source, targetArray) => {
+      source.forEach(row => {
+        const timeMs = getEpoch(row);
+        // Skip invalid dates
+        if (isNaN(timeMs)) return;
+
+        targetArray.push({
+          ...row,
+          // Store relative time in seconds
+          relativeTime: (timeMs - minTime) / 1000.0 
+        });
+      });
+    };
+
+    normalize(rawAccel, accelerometer);
+    normalize(rawGyro, gyroscope);
+    normalize(rawBaro, barometer);
+
+    return { accelerometer, gyroscope, barometer };
   };
 
   return (

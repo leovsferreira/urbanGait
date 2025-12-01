@@ -7,9 +7,9 @@ import './App.css';
 
 function App() {
   const [gpsData, setGpsData] = useState([]);
-  // Changed from generic 'sensorOne/Three' to specific types
   const [accelerometerData, setAccelerometerData] = useState([]);
   const [gyroscopeData, setGyroscopeData] = useState([]);
+  const [barometerData, setBarometerData] = useState([]);
   
   const [videoUrl, setVideoUrl] = useState(null);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
@@ -26,6 +26,7 @@ function App() {
     setGpsData([]);
     setAccelerometerData([]);
     setGyroscopeData([]);
+    setBarometerData([]);
     setVideoUrl(null);
     setIsDataLoaded(false);
     setProgress(0);
@@ -40,10 +41,9 @@ function App() {
       }
       
       setGpsData(data.gps);
-      // Load the split and time-normalized data
       setAccelerometerData(data.accelerometer);
       setGyroscopeData(data.gyroscope);
-      
+      setBarometerData(data.barometer);
       setVideoUrl(data.video);
       setIsDataLoaded(true);
       setProgress(0);
@@ -71,14 +71,16 @@ function App() {
             <h2>Welcome to urbanGait</h2>
             <p>Upload a folder containing your data files to begin:</p>
             <ul>
-              <li>gps.csv (Optional) - GPS coordinates</li>
-              <li>sensors.three.csv - Contains Gyro & Accel data</li>
-              <li>video.mp4 - First-person video</li>
+              <li>gps.csv (Optional)</li>
+              <li>sensors.three.csv (Accel/Gyro)</li>
+              <li>sensors.one.csv (Barometer)</li>
+              <li>video.mp4</li>
             </ul>
           </div>
         ) : (
           <>
-            <div className="top-section">
+            {/* LEFT COLUMN: Video Only */}
+            <div className="left-column">
               <div className="video-container">
                 <h3>Video Stream</h3>
                 <VideoPlayer
@@ -88,6 +90,11 @@ function App() {
                   onGlobalProgressChange={setProgress}
                 />
               </div>
+            </div>
+
+            {/* RIGHT COLUMN: Map (40%) + 3 Charts (20% each) */}
+            <div className="right-column">
+              
               <div className="map-container">
                 <h3>GPS Trajectory</h3>
                 <MapView 
@@ -95,11 +102,20 @@ function App() {
                   gpsData={gpsData} 
                 />
               </div>
-            </div>
 
-            <div className="charts-section">
+              <div className="barometer-container">
+                <h3>Barometer (hPa)</h3>
+                <SensorChart
+                  key={`baro-${barometerData.length}`}
+                  data={barometerData}
+                  type="pressure"
+                  progress={progress}
+                  onProgressChange={setProgress}
+                />
+              </div>
+
               <div className="chart-container">
-                <h3>Accelerometer (m/s²)</h3>
+                <h3>Linear Accelerometer (m/s²)</h3>
                 <SensorChart
                   key={`accel-${accelerometerData.length}`}
                   data={accelerometerData}
@@ -108,6 +124,7 @@ function App() {
                   onProgressChange={setProgress}
                 />
               </div>
+
               <div className="chart-container">
                 <h3>Gyroscope (rad/s)</h3>
                 <SensorChart
@@ -118,6 +135,7 @@ function App() {
                   onProgressChange={setProgress}
                 />
               </div>
+
             </div>
           </>
         )}
