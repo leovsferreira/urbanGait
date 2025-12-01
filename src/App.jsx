@@ -7,8 +7,10 @@ import './App.css';
 
 function App() {
   const [gpsData, setGpsData] = useState([]);
-  const [sensorOneData, setSensorOneData] = useState([]);
-  const [sensorThreeData, setSensorThreeData] = useState([]);
+  // Changed from generic 'sensorOne/Three' to specific types
+  const [accelerometerData, setAccelerometerData] = useState([]);
+  const [gyroscopeData, setGyroscopeData] = useState([]);
+  
   const [videoUrl, setVideoUrl] = useState(null);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -22,8 +24,8 @@ function App() {
     }
     
     setGpsData([]);
-    setSensorOneData([]);
-    setSensorThreeData([]);
+    setAccelerometerData([]);
+    setGyroscopeData([]);
     setVideoUrl(null);
     setIsDataLoaded(false);
     setProgress(0);
@@ -38,8 +40,10 @@ function App() {
       }
       
       setGpsData(data.gps);
-      setSensorOneData(data.sensorOne);
-      setSensorThreeData(data.sensorThree);
+      // Load the split and time-normalized data
+      setAccelerometerData(data.accelerometer);
+      setGyroscopeData(data.gyroscope);
+      
       setVideoUrl(data.video);
       setIsDataLoaded(true);
       setProgress(0);
@@ -67,9 +71,8 @@ function App() {
             <h2>Welcome to urbanGait</h2>
             <p>Upload a folder containing your data files to begin:</p>
             <ul>
-              <li>gps.csv - GPS coordinates</li>
-              <li>sensors.one.csv - Pressure sensor data</li>
-              <li>sensors.three.csv - Accelerometer/Gyroscope data</li>
+              <li>gps.csv (Optional) - GPS coordinates</li>
+              <li>sensors.three.csv - Contains Gyro & Accel data</li>
               <li>video.mp4 - First-person video</li>
             </ul>
           </div>
@@ -96,20 +99,20 @@ function App() {
 
             <div className="charts-section">
               <div className="chart-container">
-                <h3>Sensor One - Pressure</h3>
+                <h3>Accelerometer (m/s²)</h3>
                 <SensorChart
-                  key={`sensor-one-${sensorOneData.length}`}
-                  data={sensorOneData}
-                  type="pressure"
+                  key={`accel-${accelerometerData.length}`}
+                  data={accelerometerData}
+                  type="accelerometer"
                   progress={progress}
                   onProgressChange={setProgress}
                 />
               </div>
               <div className="chart-container">
-                <h3>Sensor Three - Gyroscope (X, Y, Z)</h3>
+                <h3>Gyroscope (rad/s)</h3>
                 <SensorChart
-                  key={`sensor-three-${sensorThreeData.length}`}
-                  data={sensorThreeData}
+                  key={`gyro-${gyroscopeData.length}`}
+                  data={gyroscopeData}
                   type="gyroscope"
                   progress={progress}
                   onProgressChange={setProgress}

@@ -42,64 +42,59 @@ const SensorChart = ({ data, type, progress = 0, onProgressChange }) => {
   const innerWidth = Math.max(width - margin.left - margin.right, 10);
   const innerHeight = Math.max(height - margin.top - margin.bottom, 10);
 
-  const n = data.length;
-  const cursorIndex = n > 1 ? Math.round((progress || 0) * (n - 1)) : 0;
-
-
-  const xScale = d3
-    .scaleLinear()
-    .domain([0, n - 1])
+  // --- CRITICAL CHANGE START ---
+  // Use Time (Seconds) for X-Axis, not Array Index.
+  
+  // 1. Find max time from the dataset (normalized in FileUploader)
+  const maxTime = data[data.length - 1].relativeTime;
+  
+  // 2. Create Time Scale
+  const xScale = d3.scaleLinear()
+    .domain([0, maxTime]) 
     .range([0, innerWidth]);
 
-  let allValues = [];
-  if (type === 'pressure') {
-    allValues = data.map((d) => d.axis_x);
-  } else {
-    allValues = data.flatMap((d) => [d.axis_x, d.axis_y, d.axis_z]);
-  }
+  // 3. Determine Cursor Position based on Time
+  // progress (0 to 1) * maxTime = Current Time in seconds
+  const currentSeconds = (progress || 0) * maxTime;
+  const cursorX = xScale(currentSeconds);
+
+  // 4. Find data point closest to current time for Y-value tooltip (optional optimization)
+  // Simple search for visualization:
+  const bisect = d3.bisector(d => d.relativeTime).left;
+  const idx = Math.min(data.length - 1, bisect(data, currentSeconds));
+  const currentDataPoint = data[idx];
+  // --- CRITICAL CHANGE END ---
+
+  // Y Scale Setup
+  const allValues = data.flatMap((d) => [d.axis_x, d.axis_y, d.axis_z]);
   const yDomain = d3.extent(allValues);
-  const yScale = d3
-    .scaleLinear()
+  const yScale = d3.scaleLinear()
     .domain(yDomain)
     .nice()
     .range([innerHeight, 0]);
+  
+  // Get cursor Y for dot
+  const cursorY = yScale(currentDataPoint ? currentDataPoint.axis_x : 0);
 
-
+  // Line Generators: use d.relativeTime
   const lineForAxis = (accessor) =>
-    d3
-      .line()
-      .x((_, i) => xScale(i))
+    d3.line()
+      .defined(d => !isNaN(accessor(d)))
+      .x((d) => xScale(d.relativeTime)) // Map time, not index
       .y((d) => yScale(accessor(d)));
 
-  const pressureLine = lineForAxis((d) => d.axis_x);
-  const gyroLineX = lineForAxis((d) => d.axis_x);
-  const gyroLineY = lineForAxis((d) => d.axis_y);
-  const gyroLineZ = lineForAxis((d) => d.axis_z);
+  const lineX = lineForAxis((d) => d.axis_x);
+  const lineY = lineForAxis((d) => d.axis_y);
+  const lineZ = lineForAxis((d) => d.axis_z);
 
-  const clampedIndex = Math.max(0, Math.min(n - 1, cursorIndex));
-  const cursorX = xScale(clampedIndex);
-  const cursorY = yScale(data[clampedIndex].axis_x);
-
-  const xTickCount = Math.min(6, n);
-  const rawXTicks = d3.ticks(0, n - 1, xTickCount - 1);
-  const xTickIndices = Array.from(
-    new Set(rawXTicks.map((i) => Math.round(i)))
-  ).filter((i) => i >= 0 && i < n);
-
-  const formatTime = (d) => {
-    const dt = new Date(d.datetime_utc);
-    if (isNaN(dt.getTime())) return '';
-    return dt.toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-    });
-  };
-
+  // Ticks
+  const xTickCount = 6;
+  const xTicks = xScale.ticks(xTickCount);
+  
   const yTickCount = 5;
-  const yTicks = d3.ticks(yDomain[0], yDomain[1], yTickCount);
+  const yTicks = yScale.ticks(yTickCount);
 
-
+  // Interaction: Convert Mouse X -> Time -> Progress
   const updateProgressFromClientX = (clientX) => {
     if (!onProgressChange || !svgRef.current) return;
 
@@ -107,15 +102,15 @@ const SensorChart = ({ data, type, progress = 0, onProgressChange }) => {
     const rect = svg.getBoundingClientRect();
     const xInSvg = clientX - rect.left - margin.left;
 
-    let ratio = xInSvg / innerWidth;
-    ratio = Math.min(Math.max(ratio, 0), 1);
-
-    const idx = Math.round(ratio * (n - 1));
-    const newProgress = n > 1 ? idx / (n - 1) : 0;
+    // Convert pixel -> Time
+    const timeAtCursor = xScale.invert(xInSvg);
+    
+    // Convert Time -> Progress (0 to 1)
+    let newProgress = timeAtCursor / maxTime;
+    newProgress = Math.min(Math.max(newProgress, 0), 1);
 
     onProgressChange(newProgress);
   };
-
 
   useEffect(() => {
     const svg = svgRef.current;
@@ -144,10 +139,17 @@ const SensorChart = ({ data, type, progress = 0, onProgressChange }) => {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [innerWidth, n, onProgressChange]);
+  }, [innerWidth, maxTime, onProgressChange]); // depend on maxTime
 
   const handleClick = (e) => {
     updateProgressFromClientX(e.clientX);
+  };
+
+  // Helper to format seconds into mm:ss
+  const formatTimeLabel = (seconds) => {
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60);
+    return `${m}:${s.toString().padStart(2, '0')}`;
   };
 
   return (
@@ -161,16 +163,11 @@ const SensorChart = ({ data, type, progress = 0, onProgressChange }) => {
       >
         <defs>
           <filter id="cursorShadow" x="-30%" y="-30%" width="160%" height="160%">
-            <feDropShadow
-              dx="0"
-              dy="1.5"
-              stdDeviation="1.5"
-              floodColor="rgba(0,0,0,0.35)"
-            />
+            <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor="rgba(0,0,0,0.35)" />
           </filter>
         </defs>
 
-        {/* background */}
+        {/* Background */}
         <rect x={0} y={0} width={width} height={height} fill="white" />
 
         <g transform={`translate(${margin.left},${margin.top})`}>
@@ -188,11 +185,11 @@ const SensorChart = ({ data, type, progress = 0, onProgressChange }) => {
           ))}
 
           {/* X grid lines */}
-          {xTickIndices.map((xi, i) => (
+          {xTicks.map((xt, i) => (
             <line
               key={`xgrid-${i}`}
-              x1={xScale(xi)}
-              x2={xScale(xi)}
+              x1={xScale(xt)}
+              x2={xScale(xt)}
               y1={0}
               y2={innerHeight}
               stroke="#f5f7f8"
@@ -201,45 +198,12 @@ const SensorChart = ({ data, type, progress = 0, onProgressChange }) => {
           ))}
 
           {/* Outer border */}
-          <rect
-            x={0}
-            y={0}
-            width={innerWidth}
-            height={innerHeight}
-            fill="none"
-            stroke="#d9dde2"
-          />
+          <rect x={0} y={0} width={innerWidth} height={innerHeight} fill="none" stroke="#d9dde2" />
 
-          {/* Data lines */}
-          {type === 'pressure' ? (
-            <path
-              d={pressureLine(data) || undefined}
-              fill="none"
-              stroke="#AAB8C1"
-              strokeWidth={2}
-            />
-          ) : (
-            <>
-              <path
-                d={gyroLineX(data) || undefined}
-                fill="none"
-                stroke="#AAB8C1"
-                strokeWidth={2}
-              />
-              <path
-                d={gyroLineY(data) || undefined}
-                fill="none"
-                stroke="#C1B8AA"
-                strokeWidth={2}
-              />
-              <path
-                d={gyroLineZ(data) || undefined}
-                fill="none"
-                stroke="#C7D1BC"
-                strokeWidth={2}
-              />
-            </>
-          )}
+          {/* Data lines: X=Blueish, Y=Brownish, Z=Greenish */}
+          <path d={lineX(data) || undefined} fill="none" stroke="#AAB8C1" strokeWidth={2} />
+          <path d={lineY(data) || undefined} fill="none" stroke="#C1B8AA" strokeWidth={2} />
+          <path d={lineZ(data) || undefined} fill="none" stroke="#C7D1BC" strokeWidth={2} />
 
           {/* Vertical guide line at cursor */}
           <line
@@ -252,7 +216,7 @@ const SensorChart = ({ data, type, progress = 0, onProgressChange }) => {
             strokeDasharray="4 4"
           />
 
-          {/* Red cursor dot ON TOP, with shadow */}
+          {/* Red cursor dot ON TOP */}
           <circle
             cx={cursorX}
             cy={cursorY}
@@ -264,45 +228,31 @@ const SensorChart = ({ data, type, progress = 0, onProgressChange }) => {
           />
 
           {/* X axis baseline + ticks + labels */}
-          <line
-            x1={0}
-            x2={innerWidth}
-            y1={innerHeight}
-            y2={innerHeight}
-            stroke="#c9ced6"
-            strokeWidth={1}
-          />
-          {xTickIndices.map((xi, i) => (
+          <line x1={0} x2={innerWidth} y1={innerHeight} y2={innerHeight} stroke="#c9ced6" strokeWidth={1} />
+          {xTicks.map((xt, i) => (
             <g key={`xtick-${i}`}>
               <line
-                x1={xScale(xi)}
-                x2={xScale(xi)}
+                x1={xScale(xt)}
+                x2={xScale(xt)}
                 y1={innerHeight}
                 y2={innerHeight + 4}
                 stroke="#c9ced6"
                 strokeWidth={1}
               />
               <text
-                x={xScale(xi)}
+                x={xScale(xt)}
                 y={innerHeight + 16}
                 textAnchor="middle"
                 fontSize={10}
                 fill="#6d7a84"
               >
-                {formatTime(data[xi])}
+                {formatTimeLabel(xt)}
               </text>
             </g>
           ))}
 
           {/* Y axis baseline + ticks + labels */}
-          <line
-            x1={0}
-            x2={0}
-            y1={0}
-            y2={innerHeight}
-            stroke="#c9ced6"
-            strokeWidth={1}
-          />
+          <line x1={0} x2={0} y1={0} y2={innerHeight} stroke="#c9ced6" strokeWidth={1} />
           {yTicks.map((yt, i) => (
             <g key={`ytick-${i}`}>
               <line
@@ -321,7 +271,7 @@ const SensorChart = ({ data, type, progress = 0, onProgressChange }) => {
                 fontSize={10}
                 fill="#6d7a84"
               >
-                {yt.toFixed(2)}
+                {yt.toFixed(1)}
               </text>
             </g>
           ))}

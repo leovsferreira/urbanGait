@@ -12,9 +12,9 @@ const FileUploader = ({ onDataLoaded }) => {
       return;
     }
 
-    const data = {
+    // We prioritize sensors.three.csv, but keep structure generic
+    const rawData = {
       gps: [],
-      sensorOne: [],
       sensorThree: [],
       video: null
     };
@@ -23,31 +23,31 @@ const FileUploader = ({ onDataLoaded }) => {
       const fileName = file.name.toLowerCase();
 
       if (fileName === 'gps.csv') {
-        data.gps = await parseCSV(file);
-      } else if (fileName === 'sensors.one.csv' || fileName === 'sensors_one.csv') {
-        data.sensorOne = await parseCSV(file);
-      } else if (fileName === 'sensors.three.csv' || fileName === 'sensors_three.csv') {
-        data.sensorThree = await parseCSV(file);
+        rawData.gps = await parseCSV(file);
+      } else if (fileName === 'sensors.three.csv' || fileName === 'sensors_three.csv' || fileName === 'three.sensors.csv') {
+        rawData.sensorThree = await parseCSV(file);
       } else if (fileName === 'video.mp4') {
-        data.video = URL.createObjectURL(file);
+        rawData.video = URL.createObjectURL(file);
       }
     }
 
-    if (data.gps.length === 0 || data.sensorOne.length === 0 || 
-        data.sensorThree.length === 0 || !data.video) {
-      alert('Missing required files. Please ensure the folder contains:\n- gps.csv\n- sensors_one.csv (or sensors.one.csv)\n- sensors_three.csv (or sensors.three.csv)\n- video.mp4');
-      
-      if (data.video) {
-        URL.revokeObjectURL(data.video);
-      }
-      
-      if (folderInputRef.current) {
-        folderInputRef.current.value = '';
-      }
+    if (rawData.sensorThree.length === 0 || !rawData.video) {
+      alert('Missing required files.\nRequired: sensors.three.csv (or three.sensors.csv) and video.mp4');
+      if (rawData.video) URL.revokeObjectURL(rawData.video);
       return;
     }
 
-    onDataLoaded(data);
+    // Process Sensor Data: Split Gyro/Accel and Normalize Time
+    const processedSensors = processSensorData(rawData.sensorThree);
+
+    const finalData = {
+      gps: rawData.gps,
+      accelerometer: processedSensors.accelerometer,
+      gyroscope: processedSensors.gyroscope,
+      video: rawData.video
+    };
+
+    onDataLoaded(finalData);
     
     if (folderInputRef.current) {
       folderInputRef.current.value = '';
@@ -69,6 +69,39 @@ const FileUploader = ({ onDataLoaded }) => {
         }
       });
     });
+  };
+
+  // New Logic: Split sensors and calculate Relative Time (Seconds)
+  const processSensorData = (data) => {
+    const accelerometer = [];
+    const gyroscope = [];
+
+    // 1. Sort by timestamp just in case
+    data.sort((a, b) => a.timestamp_nano - b.timestamp_nano);
+
+    if (data.length === 0) return { accelerometer, gyroscope };
+
+    // 2. Determine start time (first timestamp in the entire file)
+    const startTime = data[0].timestamp_nano;
+
+    // 3. Iterate, Split, and Normalize
+    data.forEach(row => {
+      // Calculate seconds from start: (Current - Start) / 1,000,000,000
+      const relativeTime = (row.timestamp_nano - startTime) / 1e9;
+      
+      const point = {
+        ...row,
+        relativeTime // Normalized time in seconds
+      };
+
+      if (row.name === 'lsm6dso acceleration sensor') {
+        accelerometer.push(point);
+      } else if (row.name === 'lsm6dso gyroscope sensor') {
+        gyroscope.push(point);
+      }
+    });
+
+    return { accelerometer, gyroscope };
   };
 
   return (
