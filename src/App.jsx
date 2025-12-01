@@ -128,7 +128,7 @@ function App() {
               {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
           )}
-          <h1>urbanGait - Alpha Version</h1>
+          <h1>urbanGait</h1>
         </div>
         
         {isDataLoaded && <FileUploader onDataLoaded={handleDataLoaded} buttonLabel="New Session" />}
