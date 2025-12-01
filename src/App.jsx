@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import MapView from './components/MapView';
 import SensorChart from './components/SensorChart';
 import VideoPlayer from './components/VideoPlayer';
@@ -11,17 +11,48 @@ function App() {
   const [sensorThreeData, setSensorThreeData] = useState([]);
   const [videoUrl, setVideoUrl] = useState(null);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
-
   const [progress, setProgress] = useState(0);
+  
+  const previousVideoUrlRef = useRef(null);
 
-  const handleDataLoaded = (data) => {
-    setGpsData(data.gps);
-    setSensorOneData(data.sensorOne);
-    setSensorThreeData(data.sensorThree);
-    setVideoUrl(data.video);
-    setIsDataLoaded(true);
+  const resetState = () => {
+    if (previousVideoUrlRef.current) {
+      URL.revokeObjectURL(previousVideoUrlRef.current);
+      previousVideoUrlRef.current = null;
+    }
+    
+    setGpsData([]);
+    setSensorOneData([]);
+    setSensorThreeData([]);
+    setVideoUrl(null);
+    setIsDataLoaded(false);
     setProgress(0);
   };
+
+  const handleDataLoaded = (data) => {
+    resetState();
+    
+    setTimeout(() => {
+      if (data.video) {
+        previousVideoUrlRef.current = data.video;
+      }
+      
+      setGpsData(data.gps);
+      setSensorOneData(data.sensorOne);
+      setSensorThreeData(data.sensorThree);
+      setVideoUrl(data.video);
+      setIsDataLoaded(true);
+      setProgress(0);
+    }, 50);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (previousVideoUrlRef.current) {
+        URL.revokeObjectURL(previousVideoUrlRef.current);
+      }
+    };
+  }, []);
 
   return (
     <div className="app">
@@ -48,6 +79,7 @@ function App() {
               <div className="video-container">
                 <h3>Video Stream</h3>
                 <VideoPlayer
+                  key={videoUrl}
                   videoUrl={videoUrl}
                   globalProgress={progress}
                   onGlobalProgressChange={setProgress}
@@ -55,7 +87,10 @@ function App() {
               </div>
               <div className="map-container">
                 <h3>GPS Trajectory</h3>
-                <MapView gpsData={gpsData} />
+                <MapView 
+                  key={gpsData.length}
+                  gpsData={gpsData} 
+                />
               </div>
             </div>
 
@@ -63,6 +98,7 @@ function App() {
               <div className="chart-container">
                 <h3>Sensor One - Pressure</h3>
                 <SensorChart
+                  key={`sensor-one-${sensorOneData.length}`}
                   data={sensorOneData}
                   type="pressure"
                   progress={progress}
@@ -72,6 +108,7 @@ function App() {
               <div className="chart-container">
                 <h3>Sensor Three - Gyroscope (X, Y, Z)</h3>
                 <SensorChart
+                  key={`sensor-three-${sensorThreeData.length}`}
                   data={sensorThreeData}
                   type="gyroscope"
                   progress={progress}

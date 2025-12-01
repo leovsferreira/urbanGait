@@ -24,9 +24,9 @@ const FileUploader = ({ onDataLoaded }) => {
 
       if (fileName === 'gps.csv') {
         data.gps = await parseCSV(file);
-      } else if (fileName === 'sensors.one.csv') {
+      } else if (fileName === 'sensors.one.csv' || fileName === 'sensors_one.csv') {
         data.sensorOne = await parseCSV(file);
-      } else if (fileName === 'sensors.three.csv') {
+      } else if (fileName === 'sensors.three.csv' || fileName === 'sensors_three.csv') {
         data.sensorThree = await parseCSV(file);
       } else if (fileName === 'video.mp4') {
         data.video = URL.createObjectURL(file);
@@ -35,11 +35,23 @@ const FileUploader = ({ onDataLoaded }) => {
 
     if (data.gps.length === 0 || data.sensorOne.length === 0 || 
         data.sensorThree.length === 0 || !data.video) {
-      alert('Missing required files. Please ensure the folder contains:\n- gps.csv\n- sensors_one.csv\n- sensors_three.csv\n- video.mp4');
+      alert('Missing required files. Please ensure the folder contains:\n- gps.csv\n- sensors_one.csv (or sensors.one.csv)\n- sensors_three.csv (or sensors.three.csv)\n- video.mp4');
+      
+      if (data.video) {
+        URL.revokeObjectURL(data.video);
+      }
+      
+      if (folderInputRef.current) {
+        folderInputRef.current.value = '';
+      }
       return;
     }
 
     onDataLoaded(data);
+    
+    if (folderInputRef.current) {
+      folderInputRef.current.value = '';
+    }
   };
 
   const parseCSV = (file) => {
