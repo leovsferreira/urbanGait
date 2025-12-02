@@ -71,7 +71,7 @@ body {
 }
 
 .upload-button {
-  background-color: #AAB8C1;
+  background-color: rgba(255,77,77,0.6);
   color: #ffffff;
   border: none;
   padding: 0.5rem 1rem;
@@ -83,7 +83,7 @@ body {
 }
 
 .upload-button:hover {
-  background-color: #f1f1f1;
+  background-color: rgba(255,77,77,0.3);
 }
 
 .app-body {
