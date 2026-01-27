@@ -1,0 +1,422 @@
+{
+    "preferences": {
+        "zip": false,
+        "consumption_interval": 1,
+        "magnetometer": true,
+        "camera_lens_facing_use_front": false,
+        "consumption": true,
+        "gps": true,
+        "gyroscope": true,
+        "gps_interval": 15,
+        "sensors": true,
+        "light": true,
+        "gravity": true,
+        "extra": true,
+        "accelerometer": true,
+        "camera": "2_1_1920x1080@30",
+        "sensors_delay": "3"
+    },
+    "time": {
+        "buttonStartDateTime": "2024-03-07T17:41:34.350Z",
+        "buttonStopDatetime": "2024-03-07T17:44:19.445Z",
+        "videoStartDateTime": "2024-03-07T17:41:34.504Z",
+        "videoStopDateTime": "2024-03-07T17:44:19.741Z"
+    },
+    "deviceStartAngle": "-72.26\u00b0",
+    "device": {
+        "model": "SM-G970F",
+        "manufacturer": "samsung",
+        "androidVersion": 31,
+        "screen": {
+            "screenWidthPixels": 2020,
+            "screenHeightPixels": 1080,
+            "screenDensity": 3,
+            "screenDpi": 480
+        },
+        "sensors": {
+            "LSM6DSO Acceleration Sensor": {
+                "type": 1,
+                "id": 0,
+                "min_delay": 5000,
+                "max_delay": 180000,
+                "resolution": 0.0023942017,
+                "power": 0.25,
+                "version": 15932
+            },
+            "LSM6DSO Gyroscope Sensor": {
+                "type": 4,
+                "id": 0,
+                "min_delay": 5000,
+                "max_delay": 180000,
+                "resolution": 0.00061086525,
+                "power": 6.1,
+                "version": 1
+            },
+            "Uncalibrated Magnetic Sensor": {
+                "type": 14,
+                "id": 0,
+                "min_delay": 10000,
+                "max_delay": 200000,
+                "resolution": 0.06,
+                "power": 6,
+                "version": 1
+            },
+            "AK09918C Magnetic field Sensor": {
+                "type": 2,
+                "id": 0,
+                "min_delay": 10000,
+                "max_delay": 200000,
+                "resolution": 0.06,
+                "power": 6,
+                "version": 1
+            },
+            "LPS22H Barometer Sensor": {
+                "type": 6,
+                "id": 0,
+                "min_delay": 100000,
+                "max_delay": 1000000,
+                "resolution": 0.00024414062,
+                "power": 1,
+                "version": 1
+            },
+            "TMD4910 Proximity Sensor": {
+                "type": 65592,
+                "id": 0,
+                "min_delay": 0,
+                "max_delay": 0,
+                "resolution": 1,
+                "power": 0.75,
+                "version": 1
+            },
+            "TCS3407 lux Sensor": {
+                "type": 65598,
+                "id": 0,
+                "min_delay": 200000,
+                "max_delay": 200000,
+                "resolution": 1,
+                "power": 0.75,
+                "version": 1
+            },
+            "SAMSUNG Step Detector Sensor": {
+                "type": 18,
+                "id": 0,
+                "min_delay": 0,
+                "max_delay": 0,
+                "resolution": 1,
+                "power": 0.3,
+                "version": 1
+            },
+            "SAMSUNG Significant Motion Sensor": {
+                "type": 17,
+                "id": 0,
+                "min_delay": -1,
+                "max_delay": 0,
+                "resolution": 1,
+                "power": 0.3,
+                "version": 2
+            },
+            "Gyroscope sensor UnCalibrated": {
+                "type": 16,
+                "id": 0,
+                "min_delay": 5000,
+                "max_delay": 180000,
+                "resolution": 0.00061086525,
+                "power": 6.1,
+                "version": 1
+            },
+            "Samsung Game Rotation Vector": {
+                "type": 15,
+                "id": 0,
+                "min_delay": 10000,
+                "max_delay": 200000,
+                "resolution": 5.9604645e-08,
+                "power": 6,
+                "version": 1
+            },
+            "Samsung Rotation Vector": {
+                "type": 11,
+                "id": 0,
+                "min_delay": 10000,
+                "max_delay": 200000,
+                "resolution": 5.9604645e-08,
+                "power": 6,
+                "version": 1
+            },
+            "SAMSUNG Step Counter Sensor": {
+                "type": 19,
+                "id": 0,
+                "min_delay": 0,
+                "max_delay": 0,
+                "resolution": 1,
+                "power": 0.3,
+                "version": 1
+            },
+            "TCS3407 RGB IR Sensor": {
+                "type": 65578,
+                "id": 0,
+                "min_delay": 200000,
+                "max_delay": 200000,
+                "resolution": 1,
+                "power": 0.75,
+                "version": 1
+            },
+            "Interrupt Gyroscope Sensor": {
+                "type": 65579,
+                "id": 0,
+                "min_delay": 20000,
+                "max_delay": 20000,
+                "resolution": 0.00061086525,
+                "power": 0.061,
+                "version": 1
+            },
+            "SAMSUNG Tilt Detector": {
+                "type": 22,
+                "id": 0,
+                "min_delay": 0,
+                "max_delay": 0,
+                "resolution": 1,
+                "power": 0.3,
+                "version": 1
+            },
+            "SAMSUNG Pick Up Gesture": {
+                "type": 25,
+                "id": 0,
+                "min_delay": -1,
+                "max_delay": 0,
+                "resolution": 1,
+                "power": 0.3,
+                "version": 1
+            },
+            "TCS3407 RGB Sensor": {
+                "type": 65587,
+                "id": 0,
+                "min_delay": 200000,
+                "max_delay": 200000,
+                "resolution": 1,
+                "power": 0.75,
+                "version": 1
+            },
+            "Acceleration Sensor UnCalibrated": {
+                "type": 35,
+                "id": 0,
+                "min_delay": 5000,
+                "max_delay": 180000,
+                "resolution": 0.0023942017,
+                "power": 0.25,
+                "version": 1
+            },
+            "SAMSUNG Thermistor Sensor": {
+                "type": 65588,
+                "id": 0,
+                "min_delay": -1,
+                "max_delay": 0,
+                "resolution": 1,
+                "power": 0.3,
+                "version": 2
+            },
+            "SAMSUNG Wake Up Motion": {
+                "type": 65590,
+                "id": 0,
+                "min_delay": 0,
+                "max_delay": 0,
+                "resolution": 1,
+                "power": 0.3,
+                "version": 1
+            },
+            "SAMSUNG Move Nomove Detector": {
+                "type": 65593,
+                "id": 0,
+                "min_delay": 0,
+                "max_delay": 0,
+                "resolution": 1,
+                "power": 0.3,
+                "version": 1
+            },
+            "SAMSUNG Call Gesture": {
+                "type": 65594,
+                "id": 0,
+                "min_delay": 0,
+                "max_delay": 0,
+                "resolution": 1,
+                "power": 0.3,
+                "version": 1
+            },
+            "Touch Proximity Sensor": {
+                "type": 65596,
+                "id": 0,
+                "min_delay": 0,
+                "max_delay": 0,
+                "resolution": 1,
+                "power": 0.75,
+                "version": 1
+            },
+            "TCS3407 Uncalibrated lux Sensor": {
+                "type": 5,
+                "id": 0,
+                "min_delay": 200000,
+                "max_delay": 200000,
+                "resolution": 1,
+                "power": 0.75,
+                "version": 1
+            },
+            "SAMSUNG Pocket Mode": {
+                "type": 65605,
+                "id": 0,
+                "min_delay": 0,
+                "max_delay": 0,
+                "resolution": 1,
+                "power": 0.3,
+                "version": 1
+            },
+            "SAMSUNG Led Cover Event": {
+                "type": 65606,
+                "id": 0,
+                "min_delay": 0,
+                "max_delay": 0,
+                "resolution": 1,
+                "power": 0.3,
+                "version": 1
+            },
+            "AutoRotation Sensor": {
+                "type": 27,
+                "id": 0,
+                "min_delay": 0,
+                "max_delay": 0,
+                "resolution": 1,
+                "power": 0.001,
+                "version": 16
+            },
+            "SarBackoffMotion Sensor": {
+                "type": 65643,
+                "id": 0,
+                "min_delay": -1,
+                "max_delay": 0,
+                "resolution": 1,
+                "power": 0.001,
+                "version": 1
+            },
+            "SAMSUNG Hall IC": {
+                "type": 65600,
+                "id": 0,
+                "min_delay": 0,
+                "max_delay": 0,
+                "resolution": 1,
+                "power": 0.3,
+                "version": 1
+            },
+            "SContext": {
+                "type": 65586,
+                "id": 0,
+                "min_delay": 0,
+                "max_delay": 200000,
+                "resolution": 0,
+                "power": 0.001,
+                "version": 1
+            },
+            "TCS3407 Rear ALS": {
+                "type": 65577,
+                "id": 0,
+                "min_delay": 10000,
+                "max_delay": 10000,
+                "resolution": 1,
+                "power": 1,
+                "version": 1
+            },
+            "SX9330 Grip Sensor": {
+                "type": 65560,
+                "id": 0,
+                "min_delay": 0,
+                "max_delay": 0,
+                "resolution": 5,
+                "power": 0.75,
+                "version": 1025
+            },
+            "Grip Notifier Sensor": {
+                "type": 65645,
+                "id": 0,
+                "min_delay": 0,
+                "max_delay": 0,
+                "resolution": 5,
+                "power": 0.75,
+                "version": 1
+            },
+            "Calibrated Lux Sensor": {
+                "type": 65616,
+                "id": 0,
+                "min_delay": 200000,
+                "max_delay": 0,
+                "resolution": 1,
+                "power": 0.75,
+                "version": 1
+            },
+            "Palm Proximity Sensor": {
+                "type": 8,
+                "id": 0,
+                "min_delay": 0,
+                "max_delay": 0,
+                "resolution": 1,
+                "power": 0,
+                "version": 1
+            },
+            "Ear call-gesture state": {
+                "type": 65595,
+                "id": 0,
+                "min_delay": 0,
+                "max_delay": 0,
+                "resolution": 1,
+                "power": 0,
+                "version": 1
+            },
+            "Motion Sensor": {
+                "type": 65559,
+                "id": 0,
+                "min_delay": 0,
+                "max_delay": 0,
+                "resolution": 0,
+                "power": 0,
+                "version": 1
+            },
+            "Auto Brightness (Rear Flicker Lux)": {
+                "type": 65601,
+                "id": 0,
+                "min_delay": 200000,
+                "max_delay": 0,
+                "resolution": 1,
+                "power": 0.75,
+                "version": 1
+            },
+            "Gravity Sensor": {
+                "type": 9,
+                "id": 0,
+                "min_delay": 10000,
+                "max_delay": 0,
+                "resolution": 5.9604645e-08,
+                "power": 6,
+                "version": 3
+            },
+            "Linear Acceleration Sensor": {
+                "type": 10,
+                "id": 0,
+                "min_delay": 10000,
+                "max_delay": 0,
+                "resolution": 0.0023942017,
+                "power": 6,
+                "version": 3
+            },
+            "Orientation Sensor": {
+                "type": 3,
+                "id": 0,
+                "min_delay": 10000,
+                "max_delay": 0,
+                "resolution": 0.00390625,
+                "power": 6,
+                "version": 1
+            }
+        }
+    },
+    "snippet": {
+        "start_time": 2.63,
+        "end_time": 42.63,
+        "total_time": 40.0
+    }
+}
