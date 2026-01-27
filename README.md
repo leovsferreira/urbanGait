@@ -24,9 +24,9 @@ __________
 
 ### This project was hosted by giithub pages and is live: [UrbanGait](https://leovsferreira.github.io/urbanGait/) 
 
-### The documentation of this project waqs also done and is saved in the [Google document](https://docs.google.com/document/d/1JDTuaQZpJGelzFK1hRWsHU5zCZvvsM3M6MtQzVKX_k4/edit?pli=1&tab=t.0)  
+### The documentation of this project waqs also done and is saved in the [document](https://docs.google.com/document/d/1JDTuaQZpJGelzFK1hRWsHU5zCZvvsM3M6MtQzVKX_k4/edit?pli=1&tab=t.0)  
 
-### Data Required
+### Data Required:
 
 gps.csv (Optional)
 
@@ -40,4 +40,4 @@ ________
 
 - We organized the data files in this pattern and created a dashboard on the same which analyses the gait based on the data.
 
-- So, we've uploaded a few data files which we thought were the best to find out the gait patterns out of all of what we have.
+- So, we've uploaded a few data files which we thought were the best to find out the gait patterns out of all of what we have. You cn open the webpage and upload the given data folders to find out the gait and analyse the gait patterns.
